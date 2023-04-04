@@ -1,22 +1,20 @@
 {{- $tableHeader := printf "| %-14s | %-20s | %-17s | %-15s | %-8s |\n" "Vulnerability ID" "Package" "Installed Version" "Fixed Version" "Severity" -}}
 {{- $separator := printf "|-%-14s-|-%-20s-|-%-17s-|-%-15s-|-%-8s-|\n" "---------------" "--------------------" "-----------------" "---------------" "--------" -}}
 
-{{- $vulnerabilities := slice -}}
+{{- $vulnerabilitiesCount := 0 -}}
 {{- range . -}}
-  {{- range .Vulnerabilities -}}
-    {{- $vulnerabilities = $vulnerabilities | append (dict "VulnerabilityID" .VulnerabilityID "PkgName" .PkgName "InstalledVersion" .InstalledVersion "FixedVersion" .FixedVersion "Severity" .Severity) -}}
-  {{- end -}}
+  {{- $vulnerabilitiesCount = add $vulnerabilitiesCount (len .Vulnerabilities) -}}
 {{- end -}}
 
-{{- $sortedVulnerabilities := $vulnerabilities | sortAlphaDesc "Severity" -}}
+{{ print "# Trivy Scan Results\n" }}
 
-{{- if eq (len $vulnerabilities) 0 -}}
+{{- if eq $vulnerabilitiesCount 0 -}}
 No vulnerabilities found.
 {{- else -}}
-Trivy Scan Results
-{{ $tableHeader }}
-{{ $separator }}
-{{- range $sortedVulnerabilities -}}
-  {{- printf "| %-14s | %-20s | %-17s | %-15s | %-8s |\n" .VulnerabilityID .PkgName .InstalledVersion .FixedVersion .Severity }}
+{{ print $tableHeader $separator }}
+{{- range . -}}
+  {{- range .Vulnerabilities -}}
+    {{- printf "| %-14s | %-20s | %-17s | %-15s | %-8s |\n" .VulnerabilityID .PkgName .InstalledVersion .FixedVersion .Severity }}
+  {{- end -}}
 {{- end -}}
 {{- end -}}
